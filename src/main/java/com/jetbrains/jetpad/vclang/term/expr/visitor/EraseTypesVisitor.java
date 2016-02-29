@@ -13,6 +13,14 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
   private Map<Binding, String> vars = new HashMap<>();
   private Set<DataDefinition> data = new HashSet<>();
 
+  public List<Data> getReachedData() {
+    List<Data> data = new ArrayList<>();
+    for (DataDefinition dataDef : this.data) {
+      data.add(Data.decode(dataDef));
+    }
+    return data;
+  }
+
   private String encode(Binding binding) {
     if (!vars.containsKey(binding)) {
       vars.put(binding, binding.getName() + vars.size());
@@ -39,7 +47,7 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
     Definition def = expr.getDefinition();
     if (def instanceof Constructor) {
       registerData(((Constructor) def).getDataType());
-      AST res = new Var(def.getName());
+      AST res = new Var(def.getResolvedName().getFullName());
       for (ArgumentExpression arg : args) {
         res = new App(res, arg.getExpression().accept(this, null));
       }
@@ -117,7 +125,7 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
 
   public interface AST {}
 
-  public class App implements AST {
+  public static class App implements AST {
     public final AST fun;
     public final AST arg;
 
@@ -132,7 +140,7 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
     }
   }
 
-  public class Var implements AST {
+  public static class Var implements AST {
     public final String name;
 
     public Var(String name) {
@@ -145,7 +153,7 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
     }
   }
 
-  public class Lam implements AST {
+  public static class Lam implements AST {
     public final String var;
     public final AST body;
 
@@ -157,6 +165,52 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
     @Override
     public String toString() {
       return "(\\" + var + " . " + body + ")";
+    }
+  }
+
+  public static class Data {
+    public final String name;
+    public final List<Con> constructors;
+
+    public Data(String name, List<Con> constructors) {
+      this.name = name;
+      this.constructors = constructors;
+    }
+
+    public static Data decode(DataDefinition data) {
+      List<Con> constructors = new ArrayList<>();
+      for (Constructor constructor : data.getConstructors()) {
+        int size = 0;
+        for (DependentLink link = constructor.getParameters(); link.hasNext(); link = link.getNext()) {
+          size++;
+        }
+        Con con = new Con(constructor.getResolvedName().getFullName(), size);
+        constructors.add(con);
+      }
+      return new Data(data.getResolvedName().getFullName(), constructors);
+    }
+
+    @Override
+    public String toString() {
+      return "Data{" +
+              "name='" + name + '\'' +
+              ", constructors=" + constructors +
+              '}';
+    }
+  }
+
+  public static class Con {
+    public final String name;
+    public final int nArgs;
+
+    public Con(String name, int nArgs) {
+      this.name = name;
+      this.nArgs = nArgs;
+    }
+
+    @Override
+    public String toString() {
+      return name + "<" + nArgs + ">";
     }
   }
 }
