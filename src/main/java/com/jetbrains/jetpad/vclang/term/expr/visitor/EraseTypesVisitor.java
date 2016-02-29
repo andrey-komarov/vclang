@@ -11,15 +11,6 @@ import java.util.*;
 
 public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVisitor.AST> {
   private Map<Binding, String> vars = new HashMap<>();
-  private Set<DataDefinition> data = new HashSet<>();
-
-  public List<Data> getReachedData() {
-    List<Data> data = new ArrayList<>();
-    for (DataDefinition dataDef : this.data) {
-      data.add(Data.decode(dataDef));
-    }
-    return data;
-  }
 
   private String encode(Binding binding) {
     if (!vars.containsKey(binding)) {
@@ -36,8 +27,16 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
     return res;
   }
 
-  private void registerData(DataDefinition dataDefinition) {
-    data.add(dataDefinition);
+  private int getConstructorTag(Constructor constructor) {
+    List<Constructor> constructors = constructor.getDataType().getConstructors();
+    int i = 0;
+    for (Constructor constructor1 : constructors) {
+      if (constructor1 == constructor) {
+        return i;
+      }
+      i++;
+    }
+    throw new IllegalStateException();
   }
 
   @Override
@@ -46,12 +45,12 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
     expr.getFunctionArgs(args);
     Definition def = expr.getDefinition();
     if (def instanceof Constructor) {
-      registerData(((Constructor) def).getDataType());
-      AST res = new Var(def.getResolvedName().getFullName());
+      int tag = getConstructorTag((Constructor) def);
+      List<AST> consParams = new ArrayList<>();
       for (ArgumentExpression arg : args) {
-        res = new App(res, arg.getExpression().accept(this, null));
+        consParams.add(arg.getExpression().accept(this, null));
       }
-      return res;
+      return new ConCall(tag, consParams);
     }
     throw new UnsupportedOperationException();
   }
@@ -137,6 +136,21 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, EraseTypesVis
     @Override
     public String toString() {
       return "(" + fun + " " + arg + ")";
+    }
+  }
+
+  public static class ConCall implements AST {
+    public final int tag;
+    public final List<AST> params;
+
+    public ConCall(int tag, List<AST> params) {
+      this.tag = tag;
+      this.params = params;
+    }
+
+    @Override
+    public String toString() {
+      return "data(" + tag + ", " + params + ")";
     }
   }
 

@@ -16,7 +16,6 @@ public class EraseTypesTest {
     EraseTypesVisitor.AST ast = expr.accept(visitor, null);
     System.err.println(ast);
     System.err.println(expr);
-    System.err.println(visitor.getReachedData());
     assertEquals(Suc(Zero()), expr.normalize(NormalizeVisitor.Mode.NF));
   }
 
