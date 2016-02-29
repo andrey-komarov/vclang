@@ -69,7 +69,7 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, Untyped> {
       }
       return res;
     }
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(expr);
   }
 
   @Override
@@ -101,42 +101,42 @@ public class EraseTypesVisitor extends BaseExpressionVisitor<Void, Untyped> {
 
   @Override
   public Untyped visitPi(PiExpression expr, Void params) {
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(expr);
   }
 
   @Override
   public Untyped visitSigma(SigmaExpression expr, Void params) {
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(expr);
   }
 
   @Override
   public Untyped visitUniverse(UniverseExpression expr, Void params) {
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(expr);
   }
 
   @Override
   public Untyped visitError(ErrorExpression expr, Void params) {
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(expr);
   }
 
   @Override
   public Untyped visitTuple(TupleExpression expr, Void params) {
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(expr);
   }
 
   @Override
   public Untyped visitProj(ProjExpression expr, Void params) {
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(expr);
   }
 
   @Override
   public Untyped visitNew(NewExpression expr, Void params) {
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(expr);
   }
 
   @Override
   public Untyped visitLet(LetExpression letExpression, Void params) {
-    throw new UnsupportedOperationException();
+    return new Untyped.Raw<>(letExpression);
   }
 
 }

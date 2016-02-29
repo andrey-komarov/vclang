@@ -73,4 +73,19 @@ public interface Untyped {
       return "(" + fun + ")";
     }
   }
+
+  class Raw<T> implements Untyped {
+    public final T data;
+
+    public Raw(T data) {
+      this.data = data;
+    }
+
+    @Override
+    public String toString() {
+      return "Raw{" +
+              "data=" + data +
+              '}';
+    }
+  }
 }
