@@ -33,6 +33,16 @@ public abstract class Expression implements PrettyPrintable {
     return this == obj || obj instanceof Expression && compare(this, (Expression) obj);
   }
 
+  private Integer hashCode = null;
+
+  @Override
+  public int hashCode() {
+    if (hashCode == null) {
+      hashCode = accept(new HashCodeVisitor(), null);
+    }
+    return hashCode;
+  }
+
   @Override
   public void prettyPrint(StringBuilder builder, List<String> names, byte prec) {
     accept(new ToAbstractVisitor(new ConcreteExpressionFactory()), null).accept(new PrettyPrintVisitor(builder, names, 0), prec);
